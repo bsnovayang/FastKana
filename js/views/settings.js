@@ -1,6 +1,6 @@
 import { settings, saveSettings } from '../core/settings.js';
 import { clearStats } from '../core/stats.js';
-import { speak, hasSpeech, currentVoice, onVoices } from '../core/speech.js';
+import { speak, speechInfo, onVoices, isAndroid, isIOS } from '../core/speech.js';
 import { header, esc } from '../ui.js';
 
 const toggle = (key, title, desc) => `
@@ -25,6 +25,11 @@ export function render(el) {
           <button class="btn btn-ghost btn-sm" id="test">試聽</button>
         </div>
       </div>
+      <div class="panel help" id="help" hidden></div>
+      <details class="diag">
+        <summary>語音診斷（沒聲音時請截圖給開發者）</summary>
+        <pre id="diag"></pre>
+      </details>
 
       <h3 class="section-title">練習</h3>
       <div class="list">
@@ -45,12 +50,43 @@ export function render(el) {
     </main>`;
 
   const voiceEl = el.querySelector('#voice');
+  const helpEl = el.querySelector('#help');
+  const diagEl = el.querySelector('#diag');
   const showVoice = () => {
-    const v = currentVoice();
-    voiceEl.innerHTML = !hasSpeech()
-      ? '這個瀏覽器不支援語音'
+    const info = speechInfo();
+    const v = info.voice;
+    const err = info.lastError;
+    voiceEl.innerHTML = !info.supported
+      ? '<span class="ng-text">這個瀏覽器不支援語音</span>'
+      : !info.voicesLoaded ? '讀取中…'
       : v ? `使用中：${esc(v.name)}`
-      : '<span class="ng-text">找不到日文語音</span>，請在系統設定安裝日文語音（iOS：設定 › 輔助使用 › 朗讀內容 › 聲音；Android：設定 › 文字轉語音）';
+      : '<span class="ng-text">找不到日文語音</span>';
+
+    const noVoice = info.supported && info.voicesLoaded && !v;
+    const failed = err && err !== 'interrupted';
+    helpEl.hidden = !(noVoice || failed || !info.supported);
+    helpEl.innerHTML = !info.supported
+      ? '<p>這個瀏覽器不能播放語音，請改用手機內建的 Chrome 或 Safari。</p>'
+      : `<p><b>${failed ? `播放失敗（${esc(err)}）` : '沒有找到日文語音'}</b>，請照下面步驟設定後，重新開啟這個網頁：</p>
+        ${isAndroid ? `<ol>
+          <li>確認<b>媒體音量</b>有打開（按音量鍵時調的是「媒體」）</li>
+          <li>開啟手機「設定」，搜尋「<b>文字轉語音</b>」</li>
+          <li>「偏好的引擎」選 <b>Google 語音服務</b></li>
+          <li>點引擎旁的齒輪 ⚙ →「安裝語音資料」→ 下載<b>日文（日本）</b></li>
+          <li>沒有 Google 語音服務的話，到 Play 商店安裝「Google 語音服務」</li>
+        </ol>` : isIOS ? `<ol>
+          <li>確認手機沒有開<b>靜音</b>（側邊開關）</li>
+          <li>設定 › 輔助使用 › 朗讀內容 › 聲音 › 日文，下載一個聲音</li>
+        </ol>` : '<p>請在作業系統的語音設定中安裝日文語音。</p>'}`;
+
+    diagEl.textContent = [
+      `瀏覽器：${navigator.userAgent}`,
+      `支援語音：${info.supported ? '是' : '否'}`,
+      `語音數量：${info.voiceCount}${info.voicesLoaded ? '' : '（讀取中）'}`,
+      `日文語音：${v ? `${v.name}（${v.lang}${v.localService ? '，本機' : '，雲端'}）` : '無'}`,
+      `曾成功播放：${info.lastOk ? '是' : '否'}`,
+      `最近錯誤：${err || '無'}`,
+    ].join('\n');
   };
   showVoice();
   const off = onVoices(showVoice);

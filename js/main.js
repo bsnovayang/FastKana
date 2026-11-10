@@ -23,5 +23,5 @@ function route() {
 }
 
 window.addEventListener('hashchange', route);
-document.addEventListener('pointerdown', unlockSpeech, { once: true });
+document.addEventListener('touchend', unlockSpeech, { once: true });
 route();

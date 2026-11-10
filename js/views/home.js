@@ -1,4 +1,5 @@
 import { ICON } from '../ui.js';
+import { speechInfo, onVoices } from '../core/speech.js';
 
 const card = (href, icon, title, desc, extra = '') => `
   <a class="card card-link${href ? '' : ' is-disabled'}" ${href ? `href="${href}"` : 'aria-disabled="true"'}>
@@ -15,6 +16,9 @@ export function render(el) {
       <p>平假名・片假名，每天練一點</p>
     </header>
     <main class="stack">
+      <a class="voice-warn" id="voiceWarn" href="#/settings" hidden>
+        ⚠ 這台裝置可能沒有日文語音，點這裡看怎麼設定
+      </a>
       ${card('#/learn', '<span class="kana">あ</span>', '學習模式', '點假名聽發音、比較長得像的字')}
       <h3 class="section-title">練習模式</h3>
       ${card('#/setup/input', '<span class="romaji">ka</span>', '輸入羅馬拼音', '看假名，打出拼音')}
@@ -25,4 +29,12 @@ export function render(el) {
       ${card('#/stats', '<span class="romaji">%</span>', '成績與弱點', '看哪些字最常錯，專門練弱點')}
       ${card('#/settings', ICON.gear, '設定', '發音、語速、練習紀錄')}
     </main>`;
+
+  const warn = el.querySelector('#voiceWarn');
+  const check = () => {
+    const i = speechInfo();
+    warn.hidden = !(!i.supported || (i.voicesLoaded && !i.voice) || i.lastError);
+  };
+  check();
+  return onVoices(check);
 }
