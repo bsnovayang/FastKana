@@ -14,7 +14,8 @@
 - 可選平假名 / 片假名 / 混合，以及要練哪幾行
 - 記錄每個假名的對錯，常錯的字會多出題
 - **可加到主畫面、離線使用**（PWA，第一次開啟後自動下載約 0.5MB）
-- 聽音手寫、筆順動畫：開發中
+- **筆順動畫**：學習模式一筆一筆播放，可逐筆觀看
+- 聽音手寫：開發中
 
 ## 本機執行
 
@@ -45,4 +46,5 @@ node tools/stamp.mjs
 ## 授權
 
 - 發音：VOICEVOX:No.7（依 VOICEVOX 及角色使用規約標註）
+- 筆順：[KanjiVG](https://kanjivg.tagaini.net/) © Ulrich Apel，CC BY-SA 3.0。由此轉換的 `js/data/strokes.js` 依同樣授權釋出（重新產生：`node tools/build-strokes.mjs`）
 - 字體：Klee One、Nunito（SIL Open Font License 1.1），授權條款見 [fonts/](fonts/)

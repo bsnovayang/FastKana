@@ -48,7 +48,7 @@ export function render(el) {
         </div>
       </div>
 
-      <p class="note">版本 ${VERSION}<br>發音：VOICEVOX:No.7<br>字體：Klee One、Nunito（SIL Open Font License）</p>
+      <p class="note">版本 ${VERSION}<br>發音：VOICEVOX:No.7<br>筆順：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（CC BY-SA 3.0）<br>字體：Klee One、Nunito（SIL Open Font License）</p>
     </main>`;
 
   const voiceEl = el.querySelector('#voice');

@@ -3,6 +3,7 @@ import { settings } from '../core/settings.js';
 import { level } from '../core/stats.js';
 import { speak, preloadKana } from '../core/speech.js';
 import { header, ICON } from '../ui.js';
+import { strokeViewer, strokeCount, hasStrokes } from '../stroke.js';
 
 export function render(el) {
   let script = 'hira';
@@ -47,25 +48,39 @@ export function render(el) {
     })).join('');
   }
 
+  let viewer = null;
+
   function drawDetail() {
+    viewer?.stop();
+    viewer = null;
     if (!sel) { detail.hidden = true; return; }
     const other = script === 'hira' ? 'kata' : 'hira';
+    const ch = sel[script];
     const alts = sel.romaji.slice(1);
-    const sims = similarOf(sel[script]);
+    const sims = similarOf(ch);
     detail.hidden = false;
     detail.innerHTML = `
       <div class="detail-grip" aria-hidden="true"></div>
       <button class="icon-btn detail-close" data-act="close" aria-label="關閉">${ICON.close}</button>
       <div class="detail-main">
-        <div class="detail-kana kana"><span>${sel[script]}</span><span class="pair">${sel[other]}</span></div>
+        <div class="stroke-box${ch.length > 1 ? ' is-long' : ''}" id="strokes"></div>
         <div class="detail-info">
+          <div class="detail-kana kana"><span>${ch}</span><span class="pair">${sel[other]}</span></div>
           <div class="romaji detail-romaji">${sel.romaji[0]}</div>
           ${alts.length ? `<div class="detail-alt">也可寫作 ${alts.join('、')}</div>` : ''}
+          <div class="detail-alt">共 ${strokeCount(ch)} 畫</div>
         </div>
-        <button class="sound-btn" data-act="speak" aria-label="播放發音">${ICON.sound}</button>
       </div>
-      ${sims.length ? `<div class="detail-sim"><span>易混淆</span>${sims.map(c => `<button class="chip chip-sm kana" data-c="${c}">${c}</button>`).join('')}</div>` : ''}
-      <p class="detail-note">筆順動畫即將推出</p>`;
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-sm" data-act="speak">${ICON.sound}<span>發音</span></button>
+        <button class="btn btn-ghost btn-sm" data-act="replay">${ICON.replay}<span>筆順</span></button>
+        <button class="btn btn-ghost btn-sm" data-act="step">${ICON.step}<span>下一筆</span></button>
+      </div>
+      ${sims.length ? `<div class="detail-sim"><span>易混淆</span>${sims.map(c => `<button class="chip chip-sm kana" data-c="${c}">${c}</button>`).join('')}</div>` : ''}`;
+    if (hasStrokes(ch)) {
+      viewer = strokeViewer(detail.querySelector('#strokes'), ch);
+      viewer.play();
+    }
   }
 
   function select(char) {
@@ -96,6 +111,10 @@ export function render(el) {
       close();
     } else if (b.dataset.act === 'speak') {
       speak(sel.hira, { force: true });
+    } else if (b.dataset.act === 'replay') {
+      viewer?.play();
+    } else if (b.dataset.act === 'step') {
+      viewer?.step();
     } else if (b.dataset.c) {
       select(b.dataset.c);
     }
