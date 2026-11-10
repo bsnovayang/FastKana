@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聲音試聽</title>
+<style>
+  :root { --bg:#F7F3EC; --card:#FFFDF9; --line:#E2DACD; --ink:#2D2A26; --ink2:#6B645A; --accent:#2F5D8A; --soft:#E3ECF5; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1B1A18; --card:#252320; --line:#3A3631; --ink:#ECE6DC; --ink2:#B3AB9E; --accent:#7FA9D6; --soft:#22303F; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  p { color: var(--ink2); margin: 0 0 16px; }
+  .kana { font-size: 20px; color: var(--ink); letter-spacing: .1em; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; }
+  .head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .no { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent); font-weight: 800; font-size: 14px; }
+  .title { font-weight: 800; }
+  .sub { font-size: 13px; color: var(--ink2); }
+  .tag { margin-left: auto; font-size: 12px; font-weight: 800; padding: 1px 8px; border-radius: 99px; background: var(--soft); color: var(--accent); }
+  audio { width: 100%; }
+</style></head>
+<body><main>
+  <h1>聲音試聽</h1>
+  <p>每段都會念：<span class="kana">あ、さ、し、す、つ、ち、ふ、しゃ、ちゅ、ん</span><br>
+  請用手機喇叭（或平常用的耳機）聽，告訴我哪個編號最清楚、最標準。<br>
+  也請比較 1 和 2：如果 2 明顯比較清楚，代表是壓縮造成的。</p>
+  <section class="card">
+    <div class="head"><span class="no">1</span><span><span class="title">目前網站的聲音</span><br><span class="sub">No.7（アナウンス）・48kbps</span></span><span class="tag">對照</span></div>
+    <audio controls preload="none" src="current.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">2</span><span><span class="title">No.7（アナウンス）</span><br><span class="sub">無壓縮原音</span></span><span class="tag">原音</span></div>
+    <audio controls preload="none" src="no7-raw.wav"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">3</span><span><span class="title">No.7（アナウンス）</span><br><span class="sub">高音質（96kbps）</span></span></div>
+    <audio controls preload="none" src="v30.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">4</span><span><span class="title">No.7（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
+    <audio controls preload="none" src="v29.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">5</span><span><span class="title">冥鳴ひまり（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
+    <audio controls preload="none" src="v14.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">6</span><span><span class="title">九州そら（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
+    <audio controls preload="none" src="v16.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">7</span><span><span class="title">WhiteCUL（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
+    <audio controls preload="none" src="v23.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">8</span><span><span class="title">春日部つむぎ（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
+    <audio controls preload="none" src="v8.mp3"></audio>
+  </section>
+  <section class="card">
+    <div class="head"><span class="no">9</span><span><span class="title">玄野武宏（ノーマル）</span><br><span class="sub">男聲</span></span></div>
+    <audio controls preload="none" src="v11.mp3"></audio>
+  </section>
+  <p style="margin-top:24px;font-size:13px">聲音：VOICEVOX（VOICEVOX:No.7、VOICEVOX:冥鳴ひまり、VOICEVOX:九州そら、VOICEVOX:WhiteCUL、VOICEVOX:春日部つむぎ、VOICEVOX:玄野武宏）</p>
+</main></body></html>
