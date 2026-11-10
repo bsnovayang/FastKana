@@ -6,6 +6,9 @@ import * as result from './views/result.js';
 import * as settingsView from './views/settings.js';
 import * as statsView from './views/stats.js';
 import { unlockSpeech, stopSpeech } from './core/speech.js';
+import { registerSW } from './pwa.js';
+
+registerSW();
 
 const routes = { '': home, learn, setup, play, result, settings: settingsView, stats: statsView };
 const app = document.getElementById('app');

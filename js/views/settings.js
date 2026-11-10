@@ -3,6 +3,7 @@ import { clearStats } from '../core/stats.js';
 import { speakSequence, speechInfo, onVoices, isAndroid, isIOS, testEnglish, ttsModeName } from '../core/speech.js';
 import { header, esc } from '../ui.js';
 import { VERSION } from '../version.js';
+import { offlineReady } from '../pwa.js';
 
 const toggle = (key, title, desc) => `
   <label class="row-item">
@@ -38,6 +39,9 @@ export function render(el) {
 
       <h3 class="section-title">資料</h3>
       <div class="list">
+        <div class="row-item">
+          <span>離線使用<small id="offline">檢查中…</small></span>
+        </div>
         <div class="row-item">
           <span>練習紀錄<small>只存在這台裝置的瀏覽器</small></span>
           <button class="btn btn-danger btn-sm" id="clear">清除</button>
@@ -97,6 +101,12 @@ export function render(el) {
   };
   showVoice();
   const off = onVoices(showVoice);
+
+  offlineReady().then(ok => {
+    el.querySelector('#offline').innerHTML = ok
+      ? '<span class="ok-text">✔ 已下載，沒網路也能練習</span>'
+      : 'Wi-Fi 下開啟一次後就會自動下載（約 0.5MB）';
+  });
 
   el.addEventListener('change', e => {
     const t = e.target;

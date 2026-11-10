@@ -37,4 +37,23 @@ html = html.replace(/(\.\/css\/style\.css|\.\/js\/inapp\.js|\.\/js\/main\.js)(\?
 html = html.replace('@@IMPORTMAP@@', finalBlock);
 writeFileSync(file, html);
 
-console.log(`版本 ${version}，共 ${modules.length} 個模組`);
+// 4. Service Worker 預先快取清單（網址要跟網頁實際請求的一模一樣，包含 ?v=）
+const list = dir => readdirSync(join(root, dir)).filter(f => statSync(join(root, dir, f)).isFile());
+const assets = [
+  './',
+  './manifest.webmanifest',
+  `./css/style.css?v=${version}`,
+  `./js/inapp.js?v=${version}`,
+  ...modules.map(m => `${m}?v=${version}`),
+  ...list('fonts').filter(f => f.endsWith('.woff2')).map(f => `./fonts/${f}`),
+  ...list('icons').map(f => `./icons/${f}`),
+  ...list('audio').filter(f => f.endsWith('.mp3')).map(f => `./audio/${f}?v=${version}`),
+];
+const swFile = join(root, 'sw.js');
+const sw = readFileSync(swFile, 'utf8').replace(
+  /\/\/ precache:start[\s\S]*?\/\/ precache:end/,
+  `// precache:start\nconst VERSION = '${version}';\nconst ASSETS = ${JSON.stringify(assets, null, 2)};\n// precache:end`,
+);
+writeFileSync(swFile, sw);
+
+console.log(`版本 ${version}，共 ${modules.length} 個模組，離線快取 ${assets.length} 個檔案`);

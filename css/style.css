@@ -595,6 +595,49 @@ button.icon-btn:hover, a.icon-btn:hover { background: var(--surface-2); color: v
 .credit { text-align: center; }
 .note { margin: 8px 4px 0; font-size: 12px; color: var(--ink-3); }
 
+/* ---------- 加到主畫面、更新提示 ---------- */
+.install {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px 12px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.install[hidden] { display: none; }
+.install img { flex: none; border-radius: 12px; }
+.install-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.45; }
+.install-text b { font-size: 15px; }
+.install-text span { font-size: 13px; color: var(--ink-2); }
+.install-close { width: 36px; height: 36px; }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 110;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .25);
+  white-space: nowrap;
+}
+.toast button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 800;
+}
+
 /* ---------- App 內建瀏覽器提示 ---------- */
 .inapp-bar {
   position: fixed;
