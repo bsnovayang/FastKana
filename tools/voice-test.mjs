@@ -65,6 +65,27 @@ for (const [id, note] of VOICES) {
   console.log('✔', names.get(id));
 }
 
+// 4) Gemini TTS（有 GEMINI_API_KEY 才產生）
+const GEMINI_VOICES = [['Kore', '女聲・沉穩'], ['Erinome', '女聲・清楚'], ['Aoede', '女聲・輕快'], ['Charon', '男聲・播報'], ['Iapetus', '男聲・清楚']];
+if (process.env.GEMINI_API_KEY) {
+  const { synthGemini, trimSilence, MODEL } = await import('./gemini.mjs');
+  for (const [voice, note] of GEMINI_VOICES) {
+    const parts = [];
+    let rate = 24000;
+    for (const c of SAMPLE) {
+      const r = await synthGemini(KANA_BY_CHAR.get(c).kana.kata, { voice });
+      rate = r.rate;
+      parts.push(normalize(trimSilence(r.samples, rate)));
+    }
+    const file = `gemini-${voice.toLowerCase()}.mp3`;
+    writeFileSync(join(out, file), toMp3(concat(parts, rate, 0.45), rate, 96));
+    cards.push({ file, title: `Gemini ${voice}`, sub: `${note}・${MODEL}`, tag: 'Gemini' });
+    console.log('✔ Gemini', voice);
+  }
+} else {
+  console.log('（沒有 GEMINI_API_KEY，略過 Gemini）');
+}
+
 const html = `<!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -95,7 +116,7 @@ const html = `<!doctype html>
     <div class="head"><span class="no">${i + 1}</span><span><span class="title">${c.title}</span><br><span class="sub">${c.sub}</span></span>${c.tag ? `<span class="tag">${c.tag}</span>` : ''}</div>
     <audio controls preload="none" src="${c.file}"></audio>
   </section>`).join('\n  ')}
-  <p style="margin-top:24px;font-size:13px">聲音：VOICEVOX（${[...new Set(cards.slice(1).map(c => c.title.replace(/（.*$/, '')))].map(n => `VOICEVOX:${n}`).join('、')}）</p>
+  <p style="margin-top:24px;font-size:13px">聲音：${[...new Set(cards.slice(1).filter(c => c.tag !== 'Gemini').map(c => c.title.replace(/（.*$/, '')))].map(n => `VOICEVOX:${n}`).join('、')}${cards.some(c => c.tag === 'Gemini') ? '；Google Gemini TTS' : ''}</p>
 </main></body></html>`;
 writeFileSync(join(out, 'index.html'), html);
 console.log(`\n完成：voice-test/index.html（${cards.length} 段）`);
