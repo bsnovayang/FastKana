@@ -73,11 +73,31 @@ export async function synthGemini(text, { voice = 'Kore', style = STYLE, tries =
   }
 }
 
-// 去掉頭尾的靜音（模型有時會留比較長的空白），保留一點點緩衝
-export function trimSilence(samples, rate, threshold = 500, padSec = 0.05) {
-  let s = 0, e = samples.length - 1;
-  while (s < e && Math.abs(samples[s]) < threshold) s++;
-  while (e > s && Math.abs(samples[e]) < threshold) e--;
+// 去掉頭尾的靜音與尾巴微弱的吐氣聲，保留一點緩衝並淡出
+// 用 10ms 視窗的音量判斷：
+// - 開頭只剪真正的靜音（門檻很低），保留 s、sh、f、h 這類音量小的子音
+// - 結尾低於最大音量 ratio 的部分視為吐氣剪掉（假名都以母音或ん結尾）
+export function trimSilence(samples, rate, { ratio = 0.06, startRatio = 0.012, padSec = 0.03, fadeSec = 0.04 } = {}) {
+  const win = Math.max(1, Math.round(rate * 0.01));
+  const rms = [];
+  for (let i = 0; i < samples.length; i += win) {
+    let s = 0;
+    const end = Math.min(samples.length, i + win);
+    for (let j = i; j < end; j++) s += samples[j] * samples[j];
+    rms.push(Math.sqrt(s / (end - i)));
+  }
+  const peak = Math.max(...rms, 1);
+  const thStart = Math.max(150, peak * startRatio);
+  const thEnd = Math.max(300, peak * ratio);
+  const a = rms.findIndex(v => v >= thStart);
+  const b = rms.length - 1 - [...rms].reverse().findIndex(v => v >= thEnd);
+  if (a < 0) return samples;
   const pad = Math.round(rate * padSec);
-  return samples.slice(Math.max(0, s - pad), Math.min(samples.length, e + pad * 3));
+  const start = Math.max(0, a * win - pad);
+  const stop = Math.min(samples.length, (b + 1) * win + pad);
+  const out = samples.slice(start, stop);
+  // 結尾淡出，避免剪斷時的爆音
+  const fade = Math.min(out.length, Math.round(rate * fadeSec));
+  for (let i = 0; i < fade; i++) out[out.length - 1 - i] = Math.round(out[out.length - 1 - i] * (i / fade));
+  return out;
 }

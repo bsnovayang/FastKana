@@ -3,3 +3,4 @@ node_modules/
 # 金鑰等機密設定，絕對不要上傳
 .env
 .env.*
+.cache/

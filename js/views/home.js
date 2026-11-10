@@ -30,7 +30,7 @@ export function render(el) {
       <h3 class="section-title">其他</h3>
       ${card('#/stats', '<span class="romaji">%</span>', '成績與弱點', '看哪些字最常錯，專門練弱點')}
       ${card('#/settings', ICON.gear, '設定', '發音、練習紀錄')}
-      <p class="note credit">發音：VOICEVOX:No.7</p>
+      <p class="note credit">發音：Google Gemini TTS</p>
     </main>`;
 
   const warn = el.querySelector('#voiceWarn');

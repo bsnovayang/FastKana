@@ -1,4 +1,4 @@
-// 播放事先產生的假名音檔（audio/*.mp3，VOICEVOX:No.7）
+// 播放事先產生的假名音檔（audio/*.mp3，Google Gemini TTS）
 // 用 Web Audio：iOS 解鎖一次之後，自動播放（例如聽音選字進題時）也不會被擋
 import { VERSION } from '../version.js';
 

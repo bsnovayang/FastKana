@@ -49,7 +49,7 @@ export function render(el) {
         </div>
       </div>
 
-      <p class="note">版本 ${VERSION}<br>發音：VOICEVOX:No.7<br>筆順：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（CC BY-SA 3.0）<br>字體：Klee One、Nunito（SIL Open Font License）</p>
+      <p class="note">版本 ${VERSION}<br>發音：Google Gemini TTS<br>筆順：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（CC BY-SA 3.0）<br>字體：Klee One、Nunito（SIL Open Font License）</p>
     </main>`;
 
   const voiceEl = el.querySelector('#voice');
@@ -61,7 +61,7 @@ export function render(el) {
     const v = info.voice;
     const err = info.lastError;
     voiceEl.innerHTML = info.audio
-      ? '內建音檔（VOICEVOX:No.7）'
+      ? '內建音檔（Gemini TTS）'
       : !info.supported
       ? '<span class="ng-text">音檔載入失敗，且瀏覽器不支援語音</span>'
       : !info.voicesLoaded ? '讀取中…'

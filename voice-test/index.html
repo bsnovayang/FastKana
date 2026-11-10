@@ -1,64 +1,54 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>聲音試聽</title>
+<title>音檔檢查</title>
 <style>
   :root { --bg:#F7F3EC; --card:#FFFDF9; --line:#E2DACD; --ink:#2D2A26; --ink2:#6B645A; --accent:#2F5D8A; --soft:#E3ECF5; }
   @media (prefers-color-scheme: dark) { :root { --bg:#1B1A18; --card:#252320; --line:#3A3631; --ink:#ECE6DC; --ink2:#B3AB9E; --accent:#7FA9D6; --soft:#22303F; } }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
-  main { max-width: 560px; margin: 0 auto; padding: 24px 16px 40px; }
+  main { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
   h1 { margin: 0 0 4px; font-size: 24px; }
-  p { color: var(--ink2); margin: 0 0 16px; }
-  .kana { font-size: 20px; color: var(--ink); letter-spacing: .1em; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; }
-  .head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-  .no { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent); font-weight: 800; font-size: 14px; }
-  .title { font-weight: 800; }
-  .sub { font-size: 13px; color: var(--ink2); }
-  .tag { margin-left: auto; font-size: 12px; font-weight: 800; padding: 1px 8px; border-radius: 99px; background: var(--soft); color: var(--accent); }
-  audio { width: 100%; }
+  h2 { margin: 24px 0 8px; font-size: 16px; color: var(--ink2); }
+  p { color: var(--ink2); margin: 0; }
+  .grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 6px; }
+  button { aspect-ratio: 1.1; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font: inherit; cursor: pointer; padding: 0; }
+  button b { font-size: 26px; font-weight: 500; line-height: 1.1; font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif; }
+  button span { font-size: 12px; color: var(--ink2); }
+  button.on { border-color: var(--accent); background: var(--soft); }
+  .grid[style*="--cols:3"] button { aspect-ratio: 1.7; }
+  .play-all { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 12px; background: var(--accent); color: #fff; font-weight: 800; aspect-ratio: auto; flex-direction: row; }
 </style></head>
 <body><main>
-  <h1>聲音試聽</h1>
-  <p>每段都會念：<span class="kana">あ、さ、し、す、つ、ち、ふ、しゃ、ちゅ、ん</span><br>
-  請用手機喇叭（或平常用的耳機）聽，告訴我哪個編號最清楚、最標準。<br>
-  也請比較 1 和 2：如果 2 明顯比較清楚，代表是壓縮造成的。</p>
-  <section class="card">
-    <div class="head"><span class="no">1</span><span><span class="title">目前網站的聲音</span><br><span class="sub">No.7（アナウンス）・48kbps</span></span><span class="tag">對照</span></div>
-    <audio controls preload="none" src="current.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">2</span><span><span class="title">No.7（アナウンス）</span><br><span class="sub">無壓縮原音</span></span><span class="tag">原音</span></div>
-    <audio controls preload="none" src="no7-raw.wav"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">3</span><span><span class="title">No.7（アナウンス）</span><br><span class="sub">高音質（96kbps）</span></span></div>
-    <audio controls preload="none" src="v30.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">4</span><span><span class="title">No.7（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
-    <audio controls preload="none" src="v29.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">5</span><span><span class="title">冥鳴ひまり（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
-    <audio controls preload="none" src="v14.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">6</span><span><span class="title">九州そら（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
-    <audio controls preload="none" src="v16.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">7</span><span><span class="title">WhiteCUL（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
-    <audio controls preload="none" src="v23.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">8</span><span><span class="title">春日部つむぎ（ノーマル）</span><br><span class="sub">96kbps</span></span></div>
-    <audio controls preload="none" src="v8.mp3"></audio>
-  </section>
-  <section class="card">
-    <div class="head"><span class="no">9</span><span><span class="title">玄野武宏（ノーマル）</span><br><span class="sub">男聲</span></span></div>
-    <audio controls preload="none" src="v11.mp3"></audio>
-  </section>
-  <p style="margin-top:24px;font-size:13px">聲音：VOICEVOX（VOICEVOX:No.7、VOICEVOX:冥鳴ひまり、VOICEVOX:九州そら、VOICEVOX:WhiteCUL、VOICEVOX:春日部つむぎ、VOICEVOX:玄野武宏）</p>
-</main></body></html>
+  <h1>音檔檢查</h1>
+  <p>Google Gemini TTS（Kore）。點假名播放，聽到念錯或不清楚的請記下來。</p>
+  <button class="play-all" id="all">▶ 依序全部播放</button>
+  <h2>清音</h2><div class="grid" style="--cols:5"><button data-f="a"><b>あ</b><span>a</span></button><button data-f="i"><b>い</b><span>i</span></button><button data-f="u"><b>う</b><span>u</span></button><button data-f="e"><b>え</b><span>e</span></button><button data-f="o"><b>お</b><span>o</span></button><button data-f="ka"><b>か</b><span>ka</span></button><button data-f="ki"><b>き</b><span>ki</span></button><button data-f="ku"><b>く</b><span>ku</span></button><button data-f="ke"><b>け</b><span>ke</span></button><button data-f="ko"><b>こ</b><span>ko</span></button><button data-f="sa"><b>さ</b><span>sa</span></button><button data-f="shi"><b>し</b><span>shi</span></button><button data-f="su"><b>す</b><span>su</span></button><button data-f="se"><b>せ</b><span>se</span></button><button data-f="so"><b>そ</b><span>so</span></button><button data-f="ta"><b>た</b><span>ta</span></button><button data-f="chi"><b>ち</b><span>chi</span></button><button data-f="tsu"><b>つ</b><span>tsu</span></button><button data-f="te"><b>て</b><span>te</span></button><button data-f="to"><b>と</b><span>to</span></button><button data-f="na"><b>な</b><span>na</span></button><button data-f="ni"><b>に</b><span>ni</span></button><button data-f="nu"><b>ぬ</b><span>nu</span></button><button data-f="ne"><b>ね</b><span>ne</span></button><button data-f="no"><b>の</b><span>no</span></button><button data-f="ha"><b>は</b><span>ha</span></button><button data-f="hi"><b>ひ</b><span>hi</span></button><button data-f="fu"><b>ふ</b><span>fu</span></button><button data-f="he"><b>へ</b><span>he</span></button><button data-f="ho"><b>ほ</b><span>ho</span></button><button data-f="ma"><b>ま</b><span>ma</span></button><button data-f="mi"><b>み</b><span>mi</span></button><button data-f="mu"><b>む</b><span>mu</span></button><button data-f="me"><b>め</b><span>me</span></button><button data-f="mo"><b>も</b><span>mo</span></button><button data-f="ya"><b>や</b><span>ya</span></button><i></i><button data-f="yu"><b>ゆ</b><span>yu</span></button><i></i><button data-f="yo"><b>よ</b><span>yo</span></button><button data-f="ra"><b>ら</b><span>ra</span></button><button data-f="ri"><b>り</b><span>ri</span></button><button data-f="ru"><b>る</b><span>ru</span></button><button data-f="re"><b>れ</b><span>re</span></button><button data-f="ro"><b>ろ</b><span>ro</span></button><button data-f="wa"><b>わ</b><span>wa</span></button><i></i><i></i><i></i><button data-f="wo"><b>を</b><span>wo</span></button><button data-f="n"><b>ん</b><span>n</span></button><i></i><i></i><i></i><i></i></div>
+  <h2>濁音・半濁音</h2><div class="grid" style="--cols:5"><button data-f="ga"><b>が</b><span>ga</span></button><button data-f="gi"><b>ぎ</b><span>gi</span></button><button data-f="gu"><b>ぐ</b><span>gu</span></button><button data-f="ge"><b>げ</b><span>ge</span></button><button data-f="go"><b>ご</b><span>go</span></button><button data-f="za"><b>ざ</b><span>za</span></button><button data-f="ji"><b>じ</b><span>ji</span></button><button data-f="zu"><b>ず</b><span>zu</span></button><button data-f="ze"><b>ぜ</b><span>ze</span></button><button data-f="zo"><b>ぞ</b><span>zo</span></button><button data-f="da"><b>だ</b><span>da</span></button><button data-f="ji"><b>ぢ</b><span>ji</span></button><button data-f="zu"><b>づ</b><span>zu</span></button><button data-f="de"><b>で</b><span>de</span></button><button data-f="do"><b>ど</b><span>do</span></button><button data-f="ba"><b>ば</b><span>ba</span></button><button data-f="bi"><b>び</b><span>bi</span></button><button data-f="bu"><b>ぶ</b><span>bu</span></button><button data-f="be"><b>べ</b><span>be</span></button><button data-f="bo"><b>ぼ</b><span>bo</span></button><button data-f="pa"><b>ぱ</b><span>pa</span></button><button data-f="pi"><b>ぴ</b><span>pi</span></button><button data-f="pu"><b>ぷ</b><span>pu</span></button><button data-f="pe"><b>ぺ</b><span>pe</span></button><button data-f="po"><b>ぽ</b><span>po</span></button></div>
+  <h2>拗音</h2><div class="grid" style="--cols:3"><button data-f="kya"><b>きゃ</b><span>kya</span></button><button data-f="kyu"><b>きゅ</b><span>kyu</span></button><button data-f="kyo"><b>きょ</b><span>kyo</span></button><button data-f="sha"><b>しゃ</b><span>sha</span></button><button data-f="shu"><b>しゅ</b><span>shu</span></button><button data-f="sho"><b>しょ</b><span>sho</span></button><button data-f="cha"><b>ちゃ</b><span>cha</span></button><button data-f="chu"><b>ちゅ</b><span>chu</span></button><button data-f="cho"><b>ちょ</b><span>cho</span></button><button data-f="nya"><b>にゃ</b><span>nya</span></button><button data-f="nyu"><b>にゅ</b><span>nyu</span></button><button data-f="nyo"><b>にょ</b><span>nyo</span></button><button data-f="hya"><b>ひゃ</b><span>hya</span></button><button data-f="hyu"><b>ひゅ</b><span>hyu</span></button><button data-f="hyo"><b>ひょ</b><span>hyo</span></button><button data-f="mya"><b>みゃ</b><span>mya</span></button><button data-f="myu"><b>みゅ</b><span>myu</span></button><button data-f="myo"><b>みょ</b><span>myo</span></button><button data-f="rya"><b>りゃ</b><span>rya</span></button><button data-f="ryu"><b>りゅ</b><span>ryu</span></button><button data-f="ryo"><b>りょ</b><span>ryo</span></button><button data-f="gya"><b>ぎゃ</b><span>gya</span></button><button data-f="gyu"><b>ぎゅ</b><span>gyu</span></button><button data-f="gyo"><b>ぎょ</b><span>gyo</span></button><button data-f="ja"><b>じゃ</b><span>ja</span></button><button data-f="ju"><b>じゅ</b><span>ju</span></button><button data-f="jo"><b>じょ</b><span>jo</span></button><button data-f="bya"><b>びゃ</b><span>bya</span></button><button data-f="byu"><b>びゅ</b><span>byu</span></button><button data-f="byo"><b>びょ</b><span>byo</span></button><button data-f="pya"><b>ぴゃ</b><span>pya</span></button><button data-f="pyu"><b>ぴゅ</b><span>pyu</span></button><button data-f="pyo"><b>ぴょ</b><span>pyo</span></button></div>
+</main>
+<script>
+  const a = new Audio();
+  let stop = false;
+  const play = (b) => new Promise(res => {
+    document.querySelectorAll('button.on').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    a.src = '../audio/' + b.dataset.f + '.mp3?r=1794290982393';
+    a.onended = () => setTimeout(res, 350);
+    a.onerror = res;
+    a.play().catch(res);
+  });
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.id === 'all') {
+      stop = !stop ? false : true;
+      for (const x of document.querySelectorAll('button[data-f]')) { if (stop) break; await play(x); }
+      return;
+    }
+    stop = true;
+    play(b);
+  });
+</script>
+</body></html>

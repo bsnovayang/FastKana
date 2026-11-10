@@ -27,13 +27,24 @@ npx serve .
 
 ## 發音音檔
 
-`audio/` 裡的 102 個 MP3 是用 [VOICEVOX](https://voicevox.hiroshiba.jp/)（No.7 アナウンス）產生的，瀏覽器不支援時才改用裝置語音。重新產生：
+`audio/` 裡的 102 個 MP3 是用 Google Gemini TTS（`gemini-3.8-flash-tts`，聲音 Kore）產生的，瀏覽器不支援時才改用裝置語音。
+
+重新產生需要 Gemini API 金鑰。請在專案資料夾建立 `.env.local`（已列入 `.gitignore`，不會上傳）：
+
+```
+GEMINI_API_KEY=你的金鑰
+```
+
+然後執行：
 
 ```
 npm install
-# 開啟 VOICEVOX 後
-node tools/gen-audio.mjs
+node --env-file=.env.local tools/gen-audio.mjs      # 全部重新產生
+ONLY=wo,n node --env-file=.env.local tools/gen-audio.mjs  # 只重新產生指定的音
+node tools/review-page.mjs                           # 產生音檔檢查頁 voice-test/
 ```
+
+原始音檔會快取在 `.cache/`，調整修剪參數時加 `FRESH=1` 才會重新呼叫 API。也可以改用 VOICEVOX：`ENGINE=voicevox node tools/gen-audio.mjs`。
 
 ## 發佈
 
@@ -45,6 +56,6 @@ node tools/stamp.mjs
 
 ## 授權
 
-- 發音：VOICEVOX:No.7（依 VOICEVOX 及角色使用規約標註）
+- 發音：Google Gemini TTS 產生
 - 筆順：[KanjiVG](https://kanjivg.tagaini.net/) © Ulrich Apel，CC BY-SA 3.0。由此轉換的 `js/data/strokes.js` 依同樣授權釋出（重新產生：`node tools/build-strokes.mjs`）
 - 字體：Klee One、Nunito（SIL Open Font License 1.1），授權條款見 [fonts/](fonts/)
