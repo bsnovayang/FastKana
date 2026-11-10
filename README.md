@@ -41,7 +41,7 @@ GEMINI_API_KEY=你的金鑰
 npm install
 node --env-file=.env.local tools/gen-audio.mjs      # 全部重新產生
 ONLY=wo,n node --env-file=.env.local tools/gen-audio.mjs  # 只重新產生指定的音
-node tools/review-page.mjs                           # 產生音檔檢查頁 voice-test/
+node tools/review-page.mjs                           # 產生音檔檢查頁 voice-test/（確認完可刪除）
 ```
 
 原始音檔會快取在 `.cache/`，調整修剪參數時加 `FRESH=1` 才會重新呼叫 API。也可以改用 VOICEVOX：`ENGINE=voicevox node tools/gen-audio.mjs`。
