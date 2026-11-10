@@ -82,5 +82,33 @@ export function choices(item, pool) {
   return shuffle([ans, ...out]);
 }
 
+// 聽音選字：選項是假名（跟題目同字種）
+// 1 個長得像的 + 同段（母音相同、聽起來像）+ 同行；排除同音字（じ／ぢ）
+export function kanaChoices(item, pool) {
+  const sc = item.script;
+  const sameSound = new Set(item.kana.romaji);
+  const seen = new Set([item.char]);
+  const out = [];
+  const take = (list, max) => {
+    let n = 0;
+    for (const k of shuffle(list)) {
+      if (out.length >= 2 || n >= max) break;
+      const c = k[sc];
+      if (seen.has(c) || k.romaji.some(r => sameSound.has(r))) continue;
+      seen.add(c); out.push(c); n++;
+    }
+  };
+  const g = item.kana;
+  const cands = pool.map(p => p.kana);
+  const sim = new Set(similarOf(item.char));
+  take(KANA.filter(k => sim.has(k[sc])), 1);
+  take(cands.filter(k => k.group === g.group && k.col === g.col), 1);
+  take(cands.filter(k => k.group === g.group && k.row === g.row), 2);
+  take(cands, 2);
+  take(KANA.filter(k => k.group === g.group), 2);
+  take(KANA, 2);
+  return shuffle([item.char, ...out]);
+}
+
 // 統一輸入：全形轉半形、小寫、去空白
 export const normalize = s => s.normalize('NFKC').toLowerCase().replace(/\s+/g, '');

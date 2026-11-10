@@ -33,6 +33,14 @@ export function level(script, hira) {
   return 'mid';
 }
 
+// 所有練習過的紀錄：[{ script, hira, r, w }]
+export function allStats() {
+  return Object.entries(data).map(([k, s]) => {
+    const [script, hira] = k.split(':');
+    return { script, hira, ...s };
+  });
+}
+
 export function clearStats() {
   data = {};
   save(KEY, data);

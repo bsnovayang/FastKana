@@ -4,7 +4,7 @@ import { buildPool } from '../core/quiz.js';
 import { session } from '../state.js';
 import { header } from '../ui.js';
 
-const MODES = { input: '輸入羅馬拼音', choice: '選擇羅馬拼音' };
+export const MODES = { input: '輸入羅馬拼音', choice: '選擇羅馬拼音', listen: '聽音選字' };
 const rowsOf = id => GROUPS.find(g => g.id === id).rows.map(r => r.key);
 const PRESETS = [
   ['入門（あ〜な行）', ['a', 'ka', 'sa', 'ta', 'na']],

@@ -4,9 +4,10 @@ import * as setup from './views/setup.js';
 import * as play from './views/play.js';
 import * as result from './views/result.js';
 import * as settingsView from './views/settings.js';
+import * as statsView from './views/stats.js';
 import { unlockSpeech, stopSpeech } from './core/speech.js';
 
-const routes = { '': home, learn, setup, play, result, settings: settingsView };
+const routes = { '': home, learn, setup, play, result, settings: settingsView, stats: statsView };
 const app = document.getElementById('app');
 let cleanup = null;
 

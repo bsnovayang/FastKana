@@ -53,6 +53,8 @@ export function render(el) {
     const sims = similarOf(sel[script]);
     detail.hidden = false;
     detail.innerHTML = `
+      <div class="detail-grip" aria-hidden="true"></div>
+      <button class="icon-btn detail-close" data-act="close" aria-label="關閉">${ICON.close}</button>
       <div class="detail-main">
         <div class="detail-kana kana"><span>${sel[script]}</span><span class="pair">${sel[other]}</span></div>
         <div class="detail-info">
@@ -89,6 +91,8 @@ export function render(el) {
       el.querySelectorAll('#group button').forEach(x => x.classList.toggle('is-on', x === b));
       sel = null;
       drawGrid(); drawDetail();
+    } else if (b.dataset.act === 'close') {
+      close();
     } else if (b.dataset.act === 'speak') {
       speak(sel.hira, { force: true });
     } else if (b.dataset.c) {
@@ -96,5 +100,31 @@ export function render(el) {
     }
   });
 
+  function close() {
+    sel = null;
+    drawGrid();
+    drawDetail();
+  }
+
+  // 往下滑關閉面板
+  let startY = null;
+  detail.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+  detail.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    const dy = Math.max(0, e.touches[0].clientY - startY);
+    detail.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  detail.addEventListener('touchend', e => {
+    if (startY === null) return;
+    const dy = e.changedTouches[0].clientY - startY;
+    startY = null;
+    detail.style.transform = '';
+    if (dy > 60) close();
+  });
+
+  const onKey = e => { if (e.key === 'Escape' && sel) close(); };
+  document.addEventListener('keydown', onKey);
+
   drawGrid();
+  return () => document.removeEventListener('keydown', onKey);
 }
