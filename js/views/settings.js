@@ -1,7 +1,8 @@
 import { settings, saveSettings } from '../core/settings.js';
 import { clearStats } from '../core/stats.js';
-import { speak, speechInfo, onVoices, isAndroid, isIOS } from '../core/speech.js';
+import { speak, speechInfo, onVoices, isAndroid, isIOS, testEnglish, ttsModeName } from '../core/speech.js';
 import { header, esc } from '../ui.js';
+import { VERSION } from '../version.js';
 
 const toggle = (key, title, desc) => `
   <label class="row-item">
@@ -29,6 +30,7 @@ export function render(el) {
       <details class="diag">
         <summary>語音診斷（沒聲音時請截圖給開發者）</summary>
         <pre id="diag"></pre>
+        <button class="btn btn-ghost btn-sm" id="testEn">測試英文發音</button>
       </details>
 
       <h3 class="section-title">練習</h3>
@@ -46,12 +48,13 @@ export function render(el) {
         </div>
       </div>
 
-      <p class="note">字體：Klee One、Nunito（SIL Open Font License）</p>
+      <p class="note">版本 ${VERSION}<br>字體：Klee One、Nunito（SIL Open Font License）</p>
     </main>`;
 
   const voiceEl = el.querySelector('#voice');
   const helpEl = el.querySelector('#help');
   const diagEl = el.querySelector('#diag');
+  let enResult = '尚未測試';
   const showVoice = () => {
     const info = speechInfo();
     const v = info.voice;
@@ -68,6 +71,7 @@ export function render(el) {
     helpEl.innerHTML = !info.supported
       ? '<p>這個瀏覽器不能播放語音，請改用手機內建的 Chrome 或 Safari。</p>'
       : `<p><b>${failed ? `播放失敗（${esc(err)}）` : '沒有找到日文語音'}</b>，請照下面步驟設定後，重新開啟這個網頁：</p>
+        ${err === 'synthesis-failed' ? '<p class="help-why">這通常是手機列出了日文語音，但<b>語音資料還沒下載</b>。可以先按下方「測試英文發音」：英文有聲音、日文沒有，就是這個原因，請做第 4 步。</p>' : ''}
         ${isAndroid ? `<ol>
           <li>確認<b>媒體音量</b>有打開（按音量鍵時調的是「媒體」）</li>
           <li>開啟手機「設定」，搜尋「<b>文字轉語音</b>」</li>
@@ -80,12 +84,15 @@ export function render(el) {
         </ol>` : '<p>請在作業系統的語音設定中安裝日文語音。</p>'}`;
 
     diagEl.textContent = [
+      `版本：${VERSION}`,
       `瀏覽器：${navigator.userAgent}`,
       `支援語音：${info.supported ? '是' : '否'}`,
       `語音數量：${info.voiceCount}${info.voicesLoaded ? '' : '（讀取中）'}`,
       `日文語音：${v ? `${v.name}（${v.lang}${v.localService ? '，本機' : '，雲端'}）` : '無'}`,
+      `播放方式：${ttsModeName()}`,
       `曾成功播放：${info.lastOk ? '是' : '否'}`,
       `最近錯誤：${err || '無'}`,
+      `英文測試：${enResult}`,
     ].join('\n');
   };
   showVoice();
@@ -101,6 +108,11 @@ export function render(el) {
     saveSettings();
   });
   el.querySelector('#test').addEventListener('click', () => speak('あいうえお', { force: true }));
+  el.querySelector('#testEn').addEventListener('click', () => {
+    enResult = '測試中…';
+    showVoice();
+    testEnglish(r => { enResult = r; showVoice(); });
+  });
   el.querySelector('#clear').addEventListener('click', e => {
     if (!confirm('確定要清除所有練習紀錄嗎？')) return;
     clearStats();

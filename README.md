@@ -23,6 +23,14 @@
 npx serve .
 ```
 
+## 發佈
+
+推送前先執行，幫 JS / CSS 加上版本號，避免手機一直用快取的舊檔案：
+
+```
+node tools/stamp.mjs
+```
+
 ## 授權
 
 - 字體：Klee One、Nunito（SIL Open Font License 1.1），授權條款見 [fonts/](fonts/)

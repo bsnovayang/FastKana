@@ -578,6 +578,8 @@ button.icon-btn:hover, a.icon-btn:hover { background: var(--surface-2); color: v
 .help { border-color: var(--ng); background: var(--ng-soft); font-size: 14px; line-height: 1.7; }
 .help p { margin: 0; }
 .help ol { margin: 8px 0 0; padding-left: 20px; }
+.help .help-why { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+.diag .btn { margin-top: 8px; }
 .diag { font-size: 13px; color: var(--ink-2); padding: 0 4px; }
 .diag summary { cursor: pointer; padding: 6px 0; font-weight: 700; }
 .diag pre {
