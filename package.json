@@ -1,0 +1,13 @@
+{
+  "name": "fastkana",
+  "private": true,
+  "type": "module",
+  "description": "速學五十音（網站本身不需要建置；這裡只放開發工具的套件）",
+  "scripts": {
+    "stamp": "node tools/stamp.mjs",
+    "audio": "node tools/gen-audio.mjs"
+  },
+  "devDependencies": {
+    "@breezystack/lamejs": "1.2.7"
+  }
+}

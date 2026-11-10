@@ -1,4 +1,6 @@
 import { settings } from './settings.js';
+import { KANA_BY_CHAR } from '../data/kana.js';
+import { playFile, stopFile, unlockAudio, audioSupported, audioFailed, preload } from './audio.js';
 
 const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
 const ua = navigator.userAgent;
@@ -41,6 +43,8 @@ export function onVoices(fn) { listeners.add(fn); return () => listeners.delete(
 
 export function speechInfo() {
   return {
+    audio: audioSupported() && !audioFailed(), // 音檔可用
+    audioFailed: audioFailed(),
     supported: !!synth,
     voicesLoaded,
     voiceCount,
@@ -73,8 +77,39 @@ function build(text, m) {
   return u;
 }
 
+const fileOf = text => KANA_BY_CHAR.get(text)?.kana.romaji[0];
+
+// 預先載入一批假名的音檔
+export function preloadKana(chars) {
+  preload([...new Set(chars.map(fileOf).filter(Boolean))]);
+}
+
+// 念出假名：優先用音檔，失敗才用裝置語音
 export function speak(text, { force = false } = {}) {
-  if (!synth || (!settings.sound && !force)) return;
+  if (!settings.sound && !force) return;
+  const file = fileOf(text);
+  if (file && audioSupported()) {
+    if (synth && (synth.speaking || synth.pending)) synth.cancel();
+    playFile(file).catch(() => { notify(); ttsSpeak(text); });
+    return;
+  }
+  ttsSpeak(text);
+}
+
+// 依序念出多個假名（試聽用）
+export async function speakSequence(chars) {
+  for (const c of chars) {
+    const file = fileOf(c);
+    if (file && audioSupported() && !audioFailed()) {
+      try { await playFile(file); await new Promise(r => setTimeout(r, 150)); continue; } catch { /* 改用語音 */ }
+    }
+    ttsSpeak(chars.join(''));
+    return;
+  }
+}
+
+function ttsSpeak(text) {
+  if (!synth) return;
   play(text, ttsMode, 0);
 }
 
@@ -129,12 +164,14 @@ export function testEnglish(cb) {
 export const ttsModeName = () => ['指定語音', '只指定語言', '語音＋原始語言代碼'][ttsMode];
 
 export function stopSpeech() {
+  stopFile();
   if (synth && (synth.speaking || synth.pending)) synth.cancel();
   current = null;
 }
 
 // 只有 iOS 需要：在第一次點擊（touchend，算使用者操作）時啟用語音
 export function unlockSpeech() {
+  unlockAudio();
   if (!synth || !isIOS) return;
   const u = new SpeechSynthesisUtterance(' ');
   u.volume = 0;

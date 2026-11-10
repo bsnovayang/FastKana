@@ -23,6 +23,16 @@
 npx serve .
 ```
 
+## 發音音檔
+
+`audio/` 裡的 102 個 MP3 是用 [VOICEVOX](https://voicevox.hiroshiba.jp/)（No.7 アナウンス）產生的，瀏覽器不支援時才改用裝置語音。重新產生：
+
+```
+npm install
+# 開啟 VOICEVOX 後
+node tools/gen-audio.mjs
+```
+
 ## 發佈
 
 推送前先執行，幫 JS / CSS 加上版本號，避免手機一直用快取的舊檔案：
@@ -33,4 +43,5 @@ node tools/stamp.mjs
 
 ## 授權
 
+- 發音：VOICEVOX:No.7（依 VOICEVOX 及角色使用規約標註）
 - 字體：Klee One、Nunito（SIL Open Font License 1.1），授權條款見 [fonts/](fonts/)

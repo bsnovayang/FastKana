@@ -1,6 +1,6 @@
 import { settings, saveSettings } from '../core/settings.js';
 import { clearStats } from '../core/stats.js';
-import { speak, speechInfo, onVoices, isAndroid, isIOS, testEnglish, ttsModeName } from '../core/speech.js';
+import { speakSequence, speechInfo, onVoices, isAndroid, isIOS, testEnglish, ttsModeName } from '../core/speech.js';
 import { header, esc } from '../ui.js';
 import { VERSION } from '../version.js';
 
@@ -17,12 +17,8 @@ export function render(el) {
       <h3 class="section-title">發音</h3>
       <div class="list">
         ${toggle('sound', '播放發音', '答題後念出假名')}
-        <label class="row-item">
-          <span>語速<small id="rateVal">${settings.rate.toFixed(1)}×</small></span>
-          <input type="range" id="rate" min="0.5" max="1.2" step="0.1" value="${settings.rate}" aria-label="語速">
-        </label>
         <div class="row-item">
-          <span>日文語音<small id="voice"></small></span>
+          <span>聲音來源<small id="voice"></small></span>
           <button class="btn btn-ghost btn-sm" id="test">試聽</button>
         </div>
       </div>
@@ -48,7 +44,7 @@ export function render(el) {
         </div>
       </div>
 
-      <p class="note">版本 ${VERSION}<br>字體：Klee One、Nunito（SIL Open Font License）</p>
+      <p class="note">版本 ${VERSION}<br>發音：VOICEVOX:No.7<br>字體：Klee One、Nunito（SIL Open Font License）</p>
     </main>`;
 
   const voiceEl = el.querySelector('#voice');
@@ -59,15 +55,18 @@ export function render(el) {
     const info = speechInfo();
     const v = info.voice;
     const err = info.lastError;
-    voiceEl.innerHTML = !info.supported
-      ? '<span class="ng-text">這個瀏覽器不支援語音</span>'
+    voiceEl.innerHTML = info.audio
+      ? '內建音檔（VOICEVOX:No.7）'
+      : !info.supported
+      ? '<span class="ng-text">音檔載入失敗，且瀏覽器不支援語音</span>'
       : !info.voicesLoaded ? '讀取中…'
-      : v ? `使用中：${esc(v.name)}`
-      : '<span class="ng-text">找不到日文語音</span>';
+      : v ? `音檔載入失敗，改用裝置語音：${esc(v.name)}`
+      : '<span class="ng-text">音檔載入失敗，也找不到日文語音</span>';
 
+    // 只有音檔不能用、只能靠裝置語音時，才需要教使用者設定
     const noVoice = info.supported && info.voicesLoaded && !v;
     const failed = err && err !== 'interrupted';
-    helpEl.hidden = !(noVoice || failed || !info.supported);
+    helpEl.hidden = info.audio || !(noVoice || failed || !info.supported);
     helpEl.innerHTML = !info.supported
       ? '<p>這個瀏覽器不能播放語音，請改用手機內建的 Chrome 或 Safari。</p>'
       : `<p><b>${failed ? `播放失敗（${esc(err)}）` : '沒有找到日文語音'}</b>，請照下面步驟設定後，重新開啟這個網頁：</p>
@@ -85,6 +84,7 @@ export function render(el) {
 
     diagEl.textContent = [
       `版本：${VERSION}`,
+      `音檔：${info.audioFailed ? '載入失敗' : info.audio ? '可用' : '瀏覽器不支援 Web Audio'}`,
       `瀏覽器：${navigator.userAgent}`,
       `支援語音：${info.supported ? '是' : '否'}`,
       `語音數量：${info.voiceCount}${info.voicesLoaded ? '' : '（讀取中）'}`,
@@ -102,12 +102,10 @@ export function render(el) {
     const t = e.target;
     if (t.dataset.key) { settings[t.dataset.key] = t.checked; saveSettings(); }
   });
-  el.querySelector('#rate').addEventListener('input', e => {
-    settings.rate = Number(e.target.value);
-    el.querySelector('#rateVal').textContent = `${settings.rate.toFixed(1)}×`;
-    saveSettings();
+  el.querySelector('#test').addEventListener('click', async () => {
+    await speakSequence(['あ', 'い', 'う', 'え', 'お']);
+    showVoice();
   });
-  el.querySelector('#test').addEventListener('click', () => speak('あいうえお', { force: true }));
   el.querySelector('#testEn').addEventListener('click', () => {
     enResult = '測試中…';
     showVoice();

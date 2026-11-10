@@ -1,7 +1,7 @@
 import { ALL_ROMAJI, PREFIXES, KANA_BY_CHAR } from '../data/kana.js';
 import { settings } from '../core/settings.js';
 import { record } from '../core/stats.js';
-import { speak } from '../core/speech.js';
+import { speak, preloadKana } from '../core/speech.js';
 import { Quiz, choices, kanaChoices, normalize } from '../core/quiz.js';
 import { session } from '../state.js';
 import { ICON, esc } from '../ui.js';
@@ -10,6 +10,7 @@ export function render(el) {
   const s = session.current;
   if (!s) { location.replace('#/'); return; }
 
+  preloadKana(s.pool.map(i => i.kana.hira));
   const quiz = new Quiz(s.pool, s.count);
   const log = [];
   const t0 = Date.now();

@@ -1,7 +1,7 @@
 import { GROUPS, KANA_BY_CHAR, similarOf } from '../data/kana.js';
 import { settings } from '../core/settings.js';
 import { level } from '../core/stats.js';
-import { speak } from '../core/speech.js';
+import { speak, preloadKana } from '../core/speech.js';
 import { header, ICON } from '../ui.js';
 
 export function render(el) {
@@ -34,6 +34,7 @@ export function render(el) {
 
   function drawGrid() {
     const g = GROUPS.find(x => x.id === groupId);
+    preloadKana(g.rows.flatMap(r => r.cells.filter(Boolean).map(k => k.hira)));
     grid.style.setProperty('--cols', g.cols);
     grid.dataset.group = groupId;
     grid.innerHTML = g.rows.flatMap(row => row.cells.map(k => {

@@ -27,13 +27,15 @@ export function render(el) {
       ${card('', '<span class="kana">書</span>', '聽音手寫', '聽發音，寫出假名', '<span class="badge">即將推出</span>')}
       <h3 class="section-title">其他</h3>
       ${card('#/stats', '<span class="romaji">%</span>', '成績與弱點', '看哪些字最常錯，專門練弱點')}
-      ${card('#/settings', ICON.gear, '設定', '發音、語速、練習紀錄')}
+      ${card('#/settings', ICON.gear, '設定', '發音、練習紀錄')}
+      <p class="note credit">發音：VOICEVOX:No.7</p>
     </main>`;
 
   const warn = el.querySelector('#voiceWarn');
   const check = () => {
     const i = speechInfo();
-    warn.hidden = !(!i.supported || (i.voicesLoaded && !i.voice) || i.lastError);
+    // 音檔能用就不需要裝置語音；只有音檔失敗、裝置語音也有問題時才提醒
+    warn.hidden = !(i.audioFailed && (!i.supported || (i.voicesLoaded && !i.voice) || i.lastError));
   };
   check();
   return onVoices(check);

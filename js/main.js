@@ -23,5 +23,10 @@ function route() {
 }
 
 window.addEventListener('hashchange', route);
-document.addEventListener('touchend', unlockSpeech, { once: true });
+// 第一次使用者操作時啟用音訊（touchend / click / keydown 才算使用者操作）
+const unlock = () => {
+  unlockSpeech();
+  ['touchend', 'click', 'keydown'].forEach(t => document.removeEventListener(t, unlock, true));
+};
+['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, unlock, true));
 route();

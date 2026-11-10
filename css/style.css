@@ -592,6 +592,7 @@ button.icon-btn:hover, a.icon-btn:hover { background: var(--surface-2); color: v
   font-size: 12px;
   line-height: 1.6;
 }
+.credit { text-align: center; }
 .note { margin: 8px 4px 0; font-size: 12px; color: var(--ink-3); }
 
 /* ---------- App 內建瀏覽器提示 ---------- */
