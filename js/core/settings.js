@@ -7,6 +7,7 @@ const DEFAULTS = {
   autoNext: true,
   quickSubmit: true,
   showRomaji: true,
+  hwDebug: false,
   range: { script: 'hira', rows: ['a', 'ka', 'sa', 'ta', 'na'], count: 20 },
 };
 

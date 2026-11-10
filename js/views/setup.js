@@ -4,7 +4,7 @@ import { buildPool } from '../core/quiz.js';
 import { session } from '../state.js';
 import { header } from '../ui.js';
 
-export const MODES = { input: '輸入羅馬拼音', choice: '選擇羅馬拼音', listen: '聽音選字' };
+export const MODES = { input: '輸入羅馬拼音', choice: '選擇羅馬拼音', listen: '聽音選字', write: '聽音手寫' };
 const rowsOf = id => GROUPS.find(g => g.id === id).rows.map(r => r.key);
 const PRESETS = [
   ['入門（あ〜な行）', ['a', 'ka', 'sa', 'ta', 'na']],
@@ -17,6 +17,10 @@ export function render(el, mode) {
   if (!MODES[mode]) { location.replace('#/'); return; }
   const range = { ...settings.range };
   let rows = new Set(range.rows);
+  // 手寫模式不含拗音（一格寫兩個字不好辨識）；隱藏但保留原本的選擇
+  const groups = mode === 'write' ? GROUPS.filter(g => g.id !== 'yoon') : GROUPS;
+  const allowed = new Set(groups.flatMap(g => g.rows.map(r => r.key)));
+  const poolRange = () => ({ ...range, rows: [...rows].filter(k => allowed.has(k)) });
 
   const seg = (id, opts, cur) => `<div class="seg" id="${id}" role="radiogroup">
     ${opts.map(([v, t]) => `<button data-v="${v}" role="radio" aria-checked="${v === cur}" class="${v === cur ? 'is-on' : ''}">${t}</button>`).join('')}
@@ -35,6 +39,7 @@ export function render(el, mode) {
           ${PRESETS.map((p, i) => `<button class="chip chip-sm" data-preset="${i}">${p[0]}</button>`).join('')}
         </div>
         <div id="groups"></div>
+        ${mode === 'write' ? '<p class="note">手寫模式不含拗音</p>' : ''}
       </section>
       <section class="panel">
         <h2 class="panel-title">題數</h2>
@@ -52,7 +57,7 @@ export function render(el, mode) {
 
   function draw() {
     const sc = range.script === 'kata' ? 'kata' : 'hira';
-    groupsEl.innerHTML = GROUPS.map(g => {
+    groupsEl.innerHTML = groups.map(g => {
       const all = g.rows.every(r => rows.has(r.key));
       return `<div class="group">
         <div class="group-head"><h3>${g.name}</h3>
@@ -62,7 +67,7 @@ export function render(el, mode) {
         </div>
       </div>`;
     }).join('');
-    const n = buildPool({ ...range, rows: [...rows] }).length;
+    const n = buildPool(poolRange()).length;
     sumEl.innerHTML = n < 3 ? '請至少選 3 個假名' : `共 <b>${n}</b> 個假名`;
     startBtn.disabled = n < 3;
   }
@@ -94,7 +99,7 @@ export function render(el, mode) {
       range.rows = [...rows];
       settings.range = range;
       saveSettings();
-      session.current = { mode, pool: buildPool(range), count: range.count };
+      session.current = { mode, pool: buildPool(poolRange()), count: range.count };
       location.hash = '#/play';
     }
   });

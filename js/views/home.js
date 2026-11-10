@@ -26,7 +26,7 @@ export function render(el) {
       ${card('#/setup/input', '<span class="romaji">ka</span>', '輸入羅馬拼音', '看假名，打出拼音')}
       ${card('#/setup/choice', '<span class="romaji">1·2·3</span>', '選擇羅馬拼音', '三選一，不用打字')}
       ${card('#/setup/listen', ICON.sound, '聽音選字', '聽發音，三選一選出假名')}
-      ${card('', '<span class="kana">書</span>', '聽音手寫', '聽發音，寫出假名', '<span class="badge">即將推出</span>')}
+      ${card('#/setup/write', '<span class="kana">書</span>', '聽音手寫', '聽發音，用手指寫出假名')}
       <h3 class="section-title">其他</h3>
       ${card('#/stats', '<span class="romaji">%</span>', '成績與弱點', '看哪些字最常錯，專門練弱點')}
       ${card('#/settings', ICON.gear, '設定', '發音、練習紀錄')}

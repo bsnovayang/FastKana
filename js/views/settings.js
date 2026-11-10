@@ -35,6 +35,7 @@ export function render(el) {
         ${toggle('autoNext', '答對自動下一題', '答錯時會停下來讓你看正解')}
         ${toggle('quickSubmit', '打完自動送出', '輸入模式：拼音打完就判定，不用按確認')}
         ${toggle('showRomaji', '五十音表顯示拼音', '關掉可以當作自我測驗')}
+        ${toggle('hwDebug', '手寫辨識除錯', '送出後顯示候選字與分數（測試用）')}
       </div>
 
       <h3 class="section-title">資料</h3>

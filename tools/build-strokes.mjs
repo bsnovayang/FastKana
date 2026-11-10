@@ -12,8 +12,15 @@ const BASE = 'https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/';
 // 所有用到的單一字元（拗音拆成兩個字）
 const chars = [...new Set(KANA.flatMap(k => [...k.hira, ...k.kata]))];
 
-// 數字只留 1 位小數，縮小檔案
-const shrink = d => d.replace(/-?\d*\.\d+/g, n => String(Math.round(parseFloat(n) * 10) / 10));
+// 數字只留 1 位小數，縮小檔案。
+// KanjiVG 有「3.3.0」「1-2」這類省略分隔符號的寫法，所以先正確拆出每個數字，再用逗號重新串起來
+const NUM = /[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/g;
+const round = n => String(Math.round(parseFloat(n) * 10) / 10);
+const shrink = d => d.split(/(?=[a-zA-Z])/).map(seg => {
+  const cmd = seg[0];
+  const nums = (seg.slice(1).match(NUM) || []).map(round);
+  return cmd + nums.join(',').replace(/,-/g, '-');
+}).join('');
 
 async function fetchSvg(ch) {
   const hex = ch.codePointAt(0).toString(16).padStart(5, '0');

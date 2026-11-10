@@ -5,10 +5,12 @@ import { speak, preloadKana } from '../core/speech.js';
 import { Quiz, choices, kanaChoices, normalize } from '../core/quiz.js';
 import { session } from '../state.js';
 import { ICON, esc } from '../ui.js';
+import { render as renderWrite } from './play-write.js';
 
 export function render(el) {
   const s = session.current;
   if (!s) { location.replace('#/'); return; }
+  if (s.mode === 'write') return renderWrite(el, s);
 
   preloadKana(s.pool.map(i => i.kana.hira));
   const quiz = new Quiz(s.pool, s.count);
