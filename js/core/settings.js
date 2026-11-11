@@ -8,6 +8,8 @@ const DEFAULTS = {
   quickSubmit: true,
   showRomaji: true,
   hwDebug: false,
+  hwStrict: false,
+  dailyGoal: 20,
   range: { script: 'hira', rows: ['a', 'ka', 'sa', 'ta', 'na'], count: 20 },
 };
 

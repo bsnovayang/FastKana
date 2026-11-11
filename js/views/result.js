@@ -1,5 +1,6 @@
 import { session } from '../state.js';
-import { keyOf } from '../core/stats.js';
+import { keyOf, todayCount, streak } from '../core/stats.js';
+import { settings } from '../core/settings.js';
 import { speak } from '../core/speech.js';
 import { header, esc } from '../ui.js';
 
@@ -15,12 +16,23 @@ export function render(el) {
   const time = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
   const msg = pct >= 90 ? '太厲害了！' : pct >= 70 ? '不錯喔，繼續加油！' : '多練幾次就會記住了';
 
+  // 今日進度：這次練習剛好讓今天達標時特別提示
+  const today = todayCount();
+  const goal = settings.dailyGoal;
+  const justReached = today >= goal && today - total < goal;
+  const dailyMsg = justReached
+    ? `🎉 今日目標達成！今天練了 ${today} 題・🔥 連續 ${streak()} 天`
+    : today >= goal
+      ? `今天練了 ${today} 題・🔥 連續 ${streak()} 天`
+      : `今天 ${today} / ${goal} 題，再 ${goal - today} 題達成今日目標`;
+
   el.innerHTML = `
     ${header('練習結果')}
     <main class="result">
       <section class="result-top">
         <div class="big-pct romaji">${pct}<small>%</small></div>
         <p class="result-msg">${msg}</p>
+        <p class="result-daily${justReached ? ' is-reached' : ''}">${dailyMsg}</p>
       </section>
       <section class="stat-row">
         <div class="stat"><b class="ok-text">${ok}</b><span>答對</span></div>

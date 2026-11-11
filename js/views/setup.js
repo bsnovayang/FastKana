@@ -4,7 +4,16 @@ import { buildPool } from '../core/quiz.js';
 import { session } from '../state.js';
 import { header } from '../ui.js';
 
-export const MODES = { input: '輸入羅馬拼音', choice: '選擇羅馬拼音', listen: '聽音選字', write: '聽音手寫' };
+export const MODES = {
+  input: '輸入羅馬拼音',
+  choice: '選擇羅馬拼音',
+  reverse: '看拼音選字',
+  listen: '聽音選字',
+  match: '平假名 ↔ 片假名',
+  write: '聽音手寫',
+};
+// 成績頁選練習方式用的短名稱
+export const MODE_SHORT = { input: '打拼音', choice: '選拼音', reverse: '看拼音選字', listen: '聽音選字', match: '平↔片', write: '手寫' };
 const rowsOf = id => GROUPS.find(g => g.id === id).rows.map(r => r.key);
 const PRESETS = [
   ['入門（あ〜な行）', ['a', 'ka', 'sa', 'ta', 'na']],
@@ -30,8 +39,10 @@ export function render(el, mode) {
     ${header(MODES[mode])}
     <main class="stack setup">
       <section class="panel">
-        <h2 class="panel-title">字種</h2>
-        ${seg('script', [['hira', '平假名'], ['kata', '片假名'], ['mix', '混合']], range.script)}
+        <h2 class="panel-title">${mode === 'match' ? '方向' : '字種'}</h2>
+        ${seg('script', mode === 'match'
+          ? [['hira', '平 → 片'], ['kata', '片 → 平'], ['mix', '混合']]
+          : [['hira', '平假名'], ['kata', '片假名'], ['mix', '混合']], range.script)}
       </section>
       <section class="panel">
         <h2 class="panel-title">範圍</h2>

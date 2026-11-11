@@ -4,6 +4,8 @@ import { level } from '../core/stats.js';
 import { speak, preloadKana } from '../core/speech.js';
 import { header, ICON } from '../ui.js';
 import { strokeViewer, strokeCount, hasStrokes } from '../stroke.js';
+import { originOf } from '../data/origins.js';
+import { createPad } from '../handwriting/canvas.js';
 
 export function render(el) {
   let script = 'hira';
@@ -58,6 +60,7 @@ export function render(el) {
     const ch = sel[script];
     const alts = sel.romaji.slice(1);
     const sims = similarOf(ch);
+    const origin = originOf(ch);
     detail.hidden = false;
     detail.innerHTML = `
       <div class="detail-grip" aria-hidden="true"></div>
@@ -69,12 +72,14 @@ export function render(el) {
           <div class="romaji detail-romaji">${sel.romaji[0]}</div>
           ${alts.length ? `<div class="detail-alt">也可寫作 ${alts.join('、')}</div>` : ''}
           <div class="detail-alt">共 ${strokeCount(ch)} 畫</div>
+          ${origin ? `<div class="detail-alt">字源 <b class="origin">${origin.kanji}</b>${origin.note ? `（${origin.note}）` : ''}</div>` : ''}
         </div>
       </div>
       <div class="detail-actions">
         <button class="btn btn-primary btn-sm" data-act="speak">${ICON.sound}<span>發音</span></button>
         <button class="btn btn-ghost btn-sm" data-act="replay">${ICON.replay}<span>筆順</span></button>
-        <button class="btn btn-ghost btn-sm" data-act="step">${ICON.step}<span>下一筆</span></button>
+        <button class="btn btn-ghost btn-sm" data-act="step">${ICON.step}<span>逐筆</span></button>
+        <button class="btn btn-ghost btn-sm" data-act="trace" ${ch.length > 1 || !hasStrokes(ch) ? 'disabled title="拗音不提供描字"' : ''}>${ICON.pen}<span>描字</span></button>
       </div>
       ${sims.length ? `<div class="detail-sim"><span>易混淆</span>${sims.map(c => `<button class="chip chip-sm kana" data-c="${c}">${c}</button>`).join('')}</div>` : ''}`;
     if (hasStrokes(ch)) {
@@ -115,6 +120,8 @@ export function render(el) {
       viewer?.play();
     } else if (b.dataset.act === 'step') {
       viewer?.step();
+    } else if (b.dataset.act === 'trace') {
+      openTrace(sel[script]);
     } else if (b.dataset.c) {
       select(b.dataset.c);
     }
@@ -142,9 +149,81 @@ export function render(el) {
     if (dy > 60) close();
   });
 
-  const onKey = e => { if (e.key === 'Escape' && sel) close(); };
+  // ---------- 描字練習（不評分） ----------
+  let trace = null;
+
+  function openTrace(ch) {
+    closeTrace();
+    viewer?.stop();
+    const wrap = document.createElement('div');
+    wrap.className = 'trace';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-label', `描字練習：${ch}`);
+    wrap.innerHTML = `
+      <div class="trace-sheet">
+        <div class="trace-head">
+          <b>描字練習</b>
+          <span class="kana trace-ch">${ch}</span>
+          <span class="romaji trace-romaji">${sel.romaji[0]}</span>
+          <button class="icon-btn" data-t="close" aria-label="關閉">${ICON.close}</button>
+        </div>
+        <p class="trace-tip" id="traceTip">照著淡色的字，依編號順序描寫</p>
+        <div class="pad trace-pad" id="tracePad"></div>
+        <div class="trace-tools">
+          <button class="btn btn-ghost" data-t="clear">清除</button>
+          <button class="btn btn-ghost" data-t="demo">${ICON.replay} 筆順示範</button>
+          <button class="btn btn-primary" data-t="speak">${ICON.sound} 發音</button>
+        </div>
+      </div>`;
+    el.appendChild(wrap);
+
+    const padEl = wrap.querySelector('#tracePad');
+    const tip = wrap.querySelector('#traceTip');
+    const total = strokeCount(ch);
+    const pad = createPad(padEl, {
+      onChange: n => {
+        tip.textContent = n >= total
+          ? `✔ ${total} 畫都描完了！按「清除」可以再寫一次`
+          : n ? `第 ${n} / ${total} 畫` : '照著淡色的字，依編號順序描寫';
+        tip.classList.toggle('is-done', n >= total);
+      },
+    });
+    padEl.insertAdjacentHTML('afterbegin', '<div class="pad-demo" aria-hidden="true"></div>');
+    const demo = strokeViewer(padEl.querySelector('.pad-demo'), ch);
+    demo.reset();
+
+    const onTraceClick = e => {
+      if (e.target === wrap) return closeTrace();
+      const t = e.target.closest('[data-t]')?.dataset.t;
+      if (t === 'close') closeTrace();
+      else if (t === 'clear') { pad.clear(); demo.reset(); }
+      else if (t === 'demo') demo.play();
+      else if (t === 'speak') speak(sel.hira, { force: true });
+    };
+    wrap.addEventListener('click', onTraceClick);
+    trace = { wrap, pad, demo };
+    wrap.querySelector('[data-t="close"]').focus();
+  }
+
+  function closeTrace() {
+    if (!trace) return;
+    trace.demo.stop();
+    trace.pad.destroy();
+    trace.wrap.remove();
+    trace = null;
+  }
+
+  const onKey = e => {
+    if (e.key !== 'Escape') return;
+    if (trace) closeTrace();
+    else if (sel) close();
+  };
   document.addEventListener('keydown', onKey);
 
   drawGrid();
-  return () => document.removeEventListener('keydown', onKey);
+  return () => {
+    closeTrace();
+    document.removeEventListener('keydown', onKey);
+  };
 }

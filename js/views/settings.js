@@ -1,5 +1,5 @@
 import { settings, saveSettings } from '../core/settings.js';
-import { clearStats } from '../core/stats.js';
+import { clearStats, exportStats, importStats, dateKey } from '../core/stats.js';
 import { speakSequence, speechInfo, onVoices, isAndroid, isIOS, testEnglish, ttsModeName } from '../core/speech.js';
 import { header, esc } from '../ui.js';
 import { VERSION } from '../version.js';
@@ -32,9 +32,16 @@ export function render(el) {
 
       <h3 class="section-title">練習</h3>
       <div class="list">
+        <div class="row-item row-col">
+          <span>每日目標<small>首頁會顯示今天的進度和連續天數</small></span>
+          <div class="seg" id="goal" role="radiogroup" aria-label="每日目標題數">
+            ${[10, 20, 30, 50].map(n => `<button data-v="${n}" role="radio" aria-checked="${n === settings.dailyGoal}" class="${n === settings.dailyGoal ? 'is-on' : ''}">${n} 題</button>`).join('')}
+          </div>
+        </div>
         ${toggle('autoNext', '答對自動下一題', '答錯時會停下來讓你看正解')}
         ${toggle('quickSubmit', '打完自動送出', '輸入模式：拼音打完就判定，不用按確認')}
         ${toggle('showRomaji', '五十音表顯示拼音', '關掉可以當作自我測驗')}
+        ${toggle('hwStrict', '手寫嚴格模式', '筆畫數不對就算錯')}
         ${toggle('hwDebug', '手寫辨識除錯', '送出後顯示候選字與分數（測試用）')}
       </div>
 
@@ -42,6 +49,14 @@ export function render(el) {
       <div class="list">
         <div class="row-item">
           <span>離線使用<small id="offline">檢查中…</small></span>
+        </div>
+        <div class="row-item">
+          <span>備份練習紀錄<small>換手機時，先匯出，再到新手機匯入</small></span>
+          <span class="row-btns">
+            <button class="btn btn-ghost btn-sm" id="export">匯出</button>
+            <button class="btn btn-ghost btn-sm" id="import">匯入</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+          </span>
         </div>
         <div class="row-item">
           <span>練習紀錄<small>只存在這台裝置的瀏覽器</small></span>
@@ -123,10 +138,70 @@ export function render(el) {
     testEnglish(r => { enResult = r; showVoice(); });
   });
   el.querySelector('#clear').addEventListener('click', e => {
-    if (!confirm('確定要清除所有練習紀錄嗎？')) return;
+    if (!confirm('確定要清除所有練習紀錄嗎？（包括每日進度和連續天數）')) return;
     clearStats();
     e.target.textContent = '已清除';
     e.target.disabled = true;
+  });
+
+  // 每日目標
+  el.querySelector('#goal').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    settings.dailyGoal = Number(b.dataset.v);
+    saveSettings();
+    el.querySelectorAll('#goal button').forEach(x => {
+      x.classList.toggle('is-on', x === b);
+      x.setAttribute('aria-checked', x === b);
+    });
+  });
+
+  // 匯出：手機上用分享選單（可以存到檔案、傳到 LINE），不支援就直接下載
+  el.querySelector('#export').addEventListener('click', async () => {
+    const { range, ...prefs } = settings;
+    const data = { app: 'fastkana', format: 1, exportedAt: new Date().toISOString(), version: VERSION, settings: { ...prefs, range }, ...exportStats() };
+    const name = `速學五十音-備份-${dateKey()}.json`;
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const file = new File([blob], name, { type: 'application/json' });
+    try {
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: '速學五十音 練習紀錄備份' });
+        return;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return; // 使用者取消分享
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  // 匯入
+  const fileInput = el.querySelector('#importFile');
+  el.querySelector('#import').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const f = fileInput.files[0];
+    fileInput.value = '';
+    if (!f) return;
+    try {
+      const obj = JSON.parse(await f.text());
+      if (obj.app !== 'fastkana') throw new Error('這不是速學五十音的備份檔');
+      const n = Object.keys(obj.stats || {}).length;
+      if (!confirm(`要匯入這份備份嗎？（${obj.exportedAt?.slice(0, 10) || '日期不明'}，${n} 個字的紀錄）\n目前這台裝置的練習紀錄會被取代。`)) return;
+      importStats(obj);
+      if (obj.settings && typeof obj.settings === 'object') {
+        for (const k of Object.keys(settings)) if (k in obj.settings) settings[k] = obj.settings[k];
+        saveSettings();
+      }
+      alert('匯入完成！');
+      location.reload();
+    } catch (err) {
+      alert(`匯入失敗：${err.message}`);
+    }
   });
 
   return off;

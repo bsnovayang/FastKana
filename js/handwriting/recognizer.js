@@ -158,6 +158,59 @@ export function rank(strokes, candidates) {
     .sort((a, b) => a.d - b.d);
 }
 
+// ---------- 筆順、筆畫方向檢查（只在筆畫數相同時） ----------
+// 把使用者和範本都縮放到同一個方框，每一筆取 12 點，找出總距離最小的筆畫對應（筆畫數 ≤ 7，直接窮舉）
+function resampleStroke(s, n = 12) {
+  const pts = resample(s.map(p => ({ ...p, id: 0 })), n);
+  return pts.map(({ x, y }) => ({ x, y }));
+}
+
+function boxNormalize(strokes) {
+  const all = strokes.flat();
+  const minX = Math.min(...all.map(p => p.x)), maxX = Math.max(...all.map(p => p.x));
+  const minY = Math.min(...all.map(p => p.y)), maxY = Math.max(...all.map(p => p.y));
+  const s = Math.max(maxX - minX, maxY - minY) || 1;
+  return strokes.map(st => st.map(p => ({ x: (p.x - minX) / s, y: (p.y - minY) / s })));
+}
+
+const meanDist = (a, b) => a.reduce((sum, p, i) => sum + dist(p, b[i]), 0) / a.length;
+
+function permutations(n) {
+  if (n === 1) return [[0]];
+  return permutations(n - 1).flatMap(p => Array.from({ length: n }, (_, i) => [...p.slice(0, i), n - 1, ...p.slice(i)]));
+}
+
+// 回傳 [{ type: 'order' | 'direction', stroke: 第幾筆（從 1 開始）, text }]
+export function strokeIssues(strokes, ch) {
+  const clean = cleanStrokes(strokes);
+  const t = template(ch);
+  if (!t || clean.length !== t.n || t.n > 7) return [];
+  const user = boxNormalize(clean).map(s => resampleStroke(s));
+  const tmpl = boxNormalize(t.strokes).map(s => resampleStroke(s));
+  const tmplLen = t.strokes.map(s => strokeLen(s));
+  // cost[i][j]：使用者第 i 筆對範本第 j 筆（取正向、反向較小者）
+  const fwd = user.map(u => tmpl.map(v => meanDist(u, v)));
+  const rev = user.map(u => tmpl.map(v => meanDist([...u].reverse(), v)));
+  let best = null, bestCost = Infinity;
+  for (const p of permutations(t.n)) {
+    const c = p.reduce((sum, j, i) => sum + Math.min(fwd[i][j], rev[i][j]), 0);
+    if (c < bestCost) { bestCost = c; best = p; }
+  }
+  const issues = [];
+  // 順序：使用者第 i 筆對到範本第 best[i] 筆
+  const wrong = best.findIndex((j, i) => j !== i);
+  if (wrong >= 0) {
+    const shouldBe = best.indexOf(wrong); // 範本第 wrong 筆，被寫在使用者第 shouldBe 筆
+    issues.push({ type: 'order', stroke: wrong + 1, text: `筆順不對：標準的第 ${wrong + 1} 筆，你在第 ${shouldBe + 1} 筆才寫` });
+  }
+  // 方向：反著寫明顯比較像（短筆畫如濁點不檢查）
+  best.forEach((j, i) => {
+    if (tmplLen[j] < 12) return;
+    if (rev[i][j] < fwd[i][j] * 0.6) issues.push({ type: 'direction', stroke: j + 1, text: `第 ${j + 1} 筆的方向寫反了` });
+  });
+  return issues;
+}
+
 // 判定：'ok' 寫對、'ng' 寫錯（比較像別的字）、'unsure' 不確定（讓使用者自己判斷）
 export const ACCEPT = 0.115;  // 距離小於這個才算「夠像」（由 tools/test-recognizer.mjs 調出來）
 export function judge(strokes, target, candidates) {

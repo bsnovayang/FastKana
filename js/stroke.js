@@ -92,5 +92,12 @@ export function strokeViewer(el, text) {
     if (await drawStroke(shown, my)) shown++;
   }
 
-  return { play, step, stop, total: paths.length };
+  // 回到只顯示淡色底字的狀態
+  function reset() {
+    stop();
+    shown = 0;
+    render();
+  }
+
+  return { play, step, stop, reset, total: paths.length };
 }

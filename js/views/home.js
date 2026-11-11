@@ -1,6 +1,8 @@
 import { ICON } from '../ui.js';
 import { speechInfo, onVoices } from '../core/speech.js';
 import { installMode, promptInstall, onInstallChange } from '../pwa.js';
+import { todayCount, streak, dueStats } from '../core/stats.js';
+import { settings } from '../core/settings.js';
 
 const card = (href, icon, title, desc, extra = '') => `
   <a class="card card-link${href ? '' : ' is-disabled'}" ${href ? `href="${href}"` : 'aria-disabled="true"'}>
@@ -21,11 +23,15 @@ export function render(el) {
         ⚠ 這台裝置可能沒有日文語音，點這裡看怎麼設定
       </a>
       <div class="install" id="install" hidden></div>
-      ${card('#/learn', '<span class="kana">あ</span>', '學習模式', '點假名聽發音、比較長得像的字')}
+      ${dailyCard()}
+      ${reviewCard()}
+      ${card('#/learn', '<span class="kana">あ</span>', '學習模式', '點假名聽發音、看筆順、描字')}
       <h3 class="section-title">練習模式</h3>
       ${card('#/setup/input', '<span class="romaji">ka</span>', '輸入羅馬拼音', '看假名，打出拼音')}
       ${card('#/setup/choice', '<span class="romaji">1·2·3</span>', '選擇羅馬拼音', '三選一，不用打字')}
+      ${card('#/setup/reverse', '<span class="kana">?</span>', '看拼音選字', '看羅馬拼音，三選一選出假名')}
       ${card('#/setup/listen', ICON.sound, '聽音選字', '聽發音，三選一選出假名')}
+      ${card('#/setup/match', '<span class="kana pair-icon">あ<small>ア</small></span>', '平假名 ↔ 片假名', '看一種，選出對應的另一種')}
       ${card('#/setup/write', '<span class="kana">書</span>', '聽音手寫', '聽發音，用手指寫出假名')}
       <h3 class="section-title">其他</h3>
       ${card('#/stats', '<span class="romaji">%</span>', '成績與弱點', '看哪些字最常錯，專門練弱點')}
@@ -73,6 +79,33 @@ export function render(el) {
   const offInstall = onInstallChange(drawInstall);
 
   return () => { offVoices(); offInstall(); };
+}
+
+// 今日進度：題數 / 目標、連續天數
+function dailyCard() {
+  const n = todayCount();
+  const goal = settings.dailyGoal;
+  const s = streak();
+  const done = n >= goal;
+  return `<a class="card daily" href="#/stats">
+    <div class="daily-top">
+      <span><b class="daily-n">${n}</b> / ${goal} 題</span>
+      <span class="daily-streak${s ? '' : ' is-zero'}">🔥 連續 ${s} 天</span>
+    </div>
+    <div class="progress"><div class="progress-bar${done ? ' is-done' : ''}" style="width:${Math.min(100, n / goal * 100)}%"></div></div>
+    <div class="daily-sub">${done ? '✔ 今日目標達成！' : n ? `再 ${goal - n} 題就達成今日目標` : '今天還沒練習，來幾題吧'}</div>
+  </a>`;
+}
+
+// 間隔重複：今天到期的字
+function reviewCard() {
+  const due = dueStats().length;
+  if (!due) return '';
+  return `<a class="review-banner" href="#/stats">
+    <span class="review-n">${due}</span>
+    <span><b>個字該複習了</b><br><small>照記憶曲線安排，複習最有效</small></span>
+    <span class="chev">${ICON.chev}</span>
+  </a>`;
 }
 
 const SHARE_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px" aria-label="分享"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>';

@@ -5,7 +5,7 @@ import { record } from '../core/stats.js';
 import { speak, preloadKana } from '../core/speech.js';
 import { Quiz } from '../core/quiz.js';
 import { createPad } from '../handwriting/canvas.js';
-import { judge, ACCEPT } from '../handwriting/recognizer.js';
+import { judge, strokeIssues, ACCEPT } from '../handwriting/recognizer.js';
 import { strokeViewer } from '../stroke.js';
 import { session } from '../state.js';
 import { ICON } from '../ui.js';
@@ -120,9 +120,19 @@ export function render(el, s) {
     viewer = strokeViewer($('answerStrokes'), item.char);
 
     const notes = [];
-    if (r.strokeCount !== r.expected) notes.push(`標準寫法是 ${r.expected} 畫（你寫了 ${r.strokeCount} 畫）`);
+    const countOff = r.strokeCount !== r.expected;
+    if (countOff) notes.push(`標準寫法是 ${r.expected} 畫（你寫了 ${r.strokeCount} 畫）`);
+    // 字形對了才檢查筆順、方向（只提示，不影響對錯）
+    if (!countOff && r.result !== 'ng') notes.push(...strokeIssues(pad.strokes, item.char).map(i => i.text));
     if (hintLevel) notes.push('有用提示');
-    $('note').textContent = notes.join('・');
+    $('note').innerHTML = notes.map(n => `<span>${n}</span>`).join('');
+
+    // 嚴格模式：筆畫數不對就算錯
+    if (settings.hwStrict && countOff && r.result !== 'ng') {
+      r.result = 'ng';
+      r.best = item.char;
+      r.strictFail = true;
+    }
 
     if (settings.hwDebug) {
       $('debug').hidden = false;
@@ -140,7 +150,8 @@ export function render(el, s) {
       viewer.play();
       return;
     }
-    const msg = r.result === 'ng' && r.best !== item.char ? `你寫的比較像「${r.best}」` : '';
+    const msg = r.strictFail ? '筆畫數不對（嚴格模式）'
+      : r.result === 'ng' && r.best !== item.char ? `你寫的比較像「${r.best}」` : '';
     finalize(r.result === 'ok', msg);
   }
 

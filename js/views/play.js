@@ -18,6 +18,14 @@ export function render(el) {
   const t0 = Date.now();
   const isInput = s.mode === 'input';
   const isListen = s.mode === 'listen';
+  const isReverse = s.mode === 'reverse';
+  const isMatch = s.mode === 'match';
+  // 選項是假名的模式（聽音選字、看拼音選字、平↔片）；其他模式選項是拼音
+  const kanaMode = isListen || isReverse || isMatch;
+  const otherScript = it => (it.script === 'hira' ? 'kata' : 'hira');
+  const scriptName = sc => (sc === 'hira' ? '平假名' : '片假名');
+  // 正確答案：平↔片是另一種字，其他假名模式就是題目的字
+  const answerOf = it => (isMatch ? it.kana[otherScript(it)] : it.char);
   let item = null, done = false, timer = 0, nOk = 0, nNg = 0;
 
   el.innerHTML = `
@@ -30,6 +38,7 @@ export function render(el) {
     </header>
     <main class="play">
       <div class="q-card" id="qcard">
+        <div class="q-label" id="qlabel"></div>
         <div class="q-kana kana" id="qk"></div>
         <button class="icon-btn q-sound" id="replay" aria-label="再聽一次" hidden>${ICON.sound}</button>
       </div>
@@ -41,7 +50,7 @@ export function render(el) {
               autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"
               placeholder="輸入羅馬拼音" aria-label="羅馬拼音">
             <button class="btn btn-primary" id="go">確認</button>
-          </form>` : `<div class="choices${isListen ? ' choices-kana' : ''}" id="choices"></div>`}
+          </form>` : `<div class="choices${kanaMode ? ' choices-kana' : ''}" id="choices"></div>`}
       </div>
       ${isInput ? '' : '<button class="btn btn-primary btn-block" id="next" hidden>下一題</button>'}
       ${s.count ? '' : '<button class="btn btn-ghost btn-block" id="finish">結束練習</button>'}
@@ -64,7 +73,15 @@ export function render(el) {
 
   function showKana() {
     qk.textContent = item.char;
+    qk.classList.remove('is-romaji');
     qk.classList.toggle('is-long', item.char.length > 1);
+    qk.classList.remove('pop'); void qk.offsetWidth; qk.classList.add('pop');
+  }
+
+  function showRomaji() {
+    qk.textContent = item.kana.romaji[0];
+    qk.classList.remove('is-long');
+    qk.classList.add('is-romaji');
     qk.classList.remove('pop'); void qk.offsetWidth; qk.classList.add('pop');
   }
 
@@ -76,24 +93,30 @@ export function render(el) {
     qcard.className = 'q-card';
     fb.className = 'feedback';
     fb.innerHTML = '';
+    replay.hidden = true;
     if (isListen) {
-      qk.classList.remove('is-long');
+      qk.classList.remove('is-long', 'is-romaji');
       qk.innerHTML = `<button class="listen-btn" id="bigPlay" aria-label="播放發音">${ICON.sound}</button>`;
-      replay.hidden = true;
       say();
+    } else if (isReverse) {
+      showRomaji();
     } else {
       showKana();
-      replay.hidden = true;
     }
+    $('qlabel').textContent = isMatch ? `選出${scriptName(otherScript(item))}`
+      : kanaMode ? `選出${scriptName(item.script)}`
+      : isInput ? '' : '選出拼音';
     if (isInput) {
       inp.value = '';
       go.textContent = '確認';
       inp.focus({ preventScroll: true });
     } else {
       next.hidden = true;
-      const opts = isListen ? kanaChoices(item, s.pool) : choices(item, s.pool);
+      const opts = isMatch
+        ? kanaChoices({ ...item, script: otherScript(item), char: answerOf(item) }, s.pool)
+        : kanaMode ? kanaChoices(item, s.pool) : choices(item, s.pool);
       choicesEl.innerHTML = opts.map((r, i) =>
-        `<button class="choice ${isListen ? 'kana' : 'romaji'}" data-r="${r}"><span class="choice-key">${i + 1}</span>${r}</button>`).join('');
+        `<button class="choice ${kanaMode ? 'kana' : 'romaji'}" data-r="${r}"><span class="choice-key">${i + 1}</span>${r}</button>`).join('');
     }
     updateTop();
   }
@@ -101,20 +124,22 @@ export function render(el) {
   function judge(given) {
     if (done) return;
     done = true;
-    const ok = isListen ? given === item.char : item.kana.romaji.includes(given);
+    const answer = answerOf(item);
+    const ok = kanaMode ? given === answer : item.kana.romaji.includes(given);
     record(item, ok);
     log.push({ item, ok, given });
     if (ok) nOk++; else { nNg++; quiz.retryLater(item); }
-    if (isListen) showKana();
+    if (isListen || isReverse) showKana();
     say();
     replay.hidden = false;
     qcard.classList.add(ok ? 'is-ok' : 'is-ng');
     fb.className = 'feedback ' + (ok ? 'is-ok' : 'is-ng');
     const std = item.kana.romaji[0];
-    if (isListen) {
+    if (kanaMode) {
+      const pair = isMatch ? `<b class="kana">${item.char}</b> = <b class="kana">${answer}</b>，` : `<b class="kana">${answer}</b> `;
       fb.innerHTML = ok
-        ? `<strong>✔ 正確</strong><span class="given"><b class="kana">${item.char}</b> 念 <b class="romaji">${std}</b></span>`
-        : `<strong>✘ 正解是 <span class="kana">${item.char}</span>（<span class="romaji">${std}</span>）</strong>
+        ? `<strong>✔ 正確</strong><span class="given">${pair}念 <b class="romaji">${std}</b></span>`
+        : `<strong>✘ 正解是 <span class="kana">${answer}</span>（<span class="romaji">${std}</span>）</strong>
            <span class="given">你選的 <b class="kana">${given}</b> 念 <b class="romaji">${romajiOf(given)}</b></span>`;
     } else {
       fb.innerHTML = ok
@@ -129,7 +154,7 @@ export function render(el) {
       choicesEl.querySelectorAll('.choice').forEach(b => {
         b.disabled = true;
         const r = b.dataset.r;
-        const right = isListen ? r === item.char : item.kana.romaji.includes(r);
+        const right = kanaMode ? r === answer : item.kana.romaji.includes(r);
         if (right) b.classList.add('is-ok');
         else if (r === given) b.classList.add('is-ng');
       });
